@@ -8,7 +8,7 @@ class App:
         self.screen_y_dim = 120
 
         self.rect_side_size = 20
-        self.ball_color = 5
+        self.rect_color = 10
 
         self.x = random.randint(0, self.screen_x_dim - self.rect_side_size)
         self.y = random.randint(0, self.screen_y_dim - self.rect_side_size)
@@ -20,6 +20,8 @@ class App:
         pyxel.run(self.update, self.draw)
 
     def update(self):
+        pyxel.mouse(True)
+
         if pyxel.btnp(pyxel.KEY_Q):
             pyxel.quit()
 
@@ -46,8 +48,9 @@ class App:
             self.x = self.x - 1
 
     def draw(self):
-        pyxel.cls(4)
-        pyxel.rect(self.x, self.y, self.rect_side_size, self.rect_side_size, self.ball_color)
+        pyxel.cls(0)
+        pyxel.rect(self.x, self.y, self.rect_side_size, self.rect_side_size, self.rect_color)
+        pyxel.text(5, 5, str(pyxel.frame_count), 7)
 
 
 App()
