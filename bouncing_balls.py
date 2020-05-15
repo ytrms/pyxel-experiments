@@ -3,17 +3,17 @@ import random
 
 ball_radius = 5
 screen_x_dim = 160
-screen_y_dim = 120
+screen_y_dim = 100
 
 
 class Ball():
     def __init__(self, color):
         self.radius = ball_radius
         self.color = color
-        self.moving_down = True
-        self.moving_right = True
-        self.x = random.randint(0, screen_x_dim-ball_radius)
-        self.y = random.randint(0, screen_y_dim-ball_radius)
+        self.moving_down = bool(random.getrandbits(1))
+        self.moving_right = bool(random.getrandbits(1))
+        self.x = random.randint(0+ball_radius, screen_x_dim-ball_radius)
+        self.y = random.randint(0+ball_radius, screen_y_dim-ball_radius)
 
     def toggle_horizontal_movement(self):
         self.moving_right = not self.moving_right
@@ -68,9 +68,11 @@ class App:
                 ball.moving_down = False
 
     def draw(self):
+        cycled_color = ((pyxel.frame_count//20) % 15) + 1
         pyxel.cls(0)
+        pyxel.tri(ball0.x, ball0.y, ball1.x, ball1.y, ball2.x, ball2.y, cycled_color)
         for ball in ball_list:
             pyxel.circ(ball.x, ball.y, ball.radius, ball.color)
 
 
-App(screen_x_dim, screen_x_dim, ball_list)
+App(screen_x_dim, screen_y_dim, ball_list)
