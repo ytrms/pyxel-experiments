@@ -2,11 +2,14 @@ import pyxel
 import random
 
 ball_radius = 5
+ball_number = 10
+ball_color = 6
+ball_list = []
 screen_x_dim = 160
 screen_y_dim = 100
 
 
-class Ball():
+class Ball:
     def __init__(self, color):
         self.radius = ball_radius
         self.color = color
@@ -19,14 +22,7 @@ class Ball():
         self.moving_right = not self.moving_right
 
     def toggle_vertical_movement(self):
-        self.moving_down = not self.moving_right
-
-
-ball0 = Ball(6)
-ball1 = Ball(2)
-ball2 = Ball(3)
-
-ball_list = [ball0, ball1, ball2]
+        self.moving_down = not self.moving_down
 
 
 class App:
@@ -55,24 +51,24 @@ class App:
             else:
                 ball.y -= 1
 
-            if ball.x == 0 + ball_radius:
-                ball.moving_right = True
+            if ball.x == 0 + ball_radius or ball.x == self.screen_x_dim - ball.radius:
+                ball.toggle_horizontal_movement()
 
-            if ball.x == self.screen_x_dim - ball.radius:
-                ball.moving_right = False
-
-            if ball.y == 0 + ball_radius:
-                ball.moving_down = True
-
-            if ball.y == self.screen_y_dim - ball.radius:
-                ball.moving_down = False
+            if ball.y == 0 + ball_radius or ball.y == self.screen_y_dim - ball.radius:
+                ball.toggle_vertical_movement()
 
     def draw(self):
         cycled_color = ((pyxel.frame_count//20) % 15) + 1
         pyxel.cls(0)
-        pyxel.tri(ball0.x, ball0.y, ball1.x, ball1.y, ball2.x, ball2.y, cycled_color)
+        # pyxel.tri(ball_list[0].x, ball_list[0].y, ball_list[1].x, ball_list[1].y, ball_list[2].x,
+        #           ball_list[2].y,
+        #           cycled_color)
         for ball in ball_list:
             pyxel.circ(ball.x, ball.y, ball.radius, ball.color)
 
+
+for i in range(ball_number):
+    ball = Ball(ball_color)
+    ball_list.append(ball)
 
 App(screen_x_dim, screen_y_dim, ball_list)
