@@ -1,17 +1,19 @@
 import pyxel
 import random
 
-screen_x_dim: int = 120
+screen_x_dim: int = 128
 screen_y_dim: int = 80
 paddle_height: int = 10
-paddle_width: int = 3
-paddle_padding_from_screen = 3
+paddle_width: int = 2
+paddle_speed: int = 3
+paddle_padding_from_screen = 5
 puck_speed: int = 2
+puck_size: int = 2
 
 
 class Puck:
     def __init__(self):
-        self.side_length = 2
+        self.side_length = puck_size
         self.x = screen_x_dim // 2
         self.y = screen_y_dim // 2
         self.color = 7
@@ -19,10 +21,10 @@ class Puck:
         self.move_right = bool(random.getrandbits(1))
 
     def move(self):
-        if self.y == 0:
+        if self.y <= 0:
             self.move_down = True
 
-        if self.y + self.side_length == screen_y_dim:
+        if self.y + self.side_length >= screen_y_dim:
             self.move_down = False
 
         if self.move_down:
@@ -45,19 +47,20 @@ class Paddle:
         self.y = (screen_y_dim // 2) - (self.height // 2)
         self.x = x_position
         self.width = paddle_width
+        self.speed = paddle_speed
 
     def move_up(self):
         if self.y > 0:
-            self.y = self.y - 2
+            self.y = self.y - paddle_speed
 
     def move_down(self):
         if (self.y + self.height) < screen_y_dim:
-            self.y = self.y + 2
+            self.y = self.y + paddle_speed
 
 
 def paddle_and_puck_collide(paddle: Paddle, puck: Puck) -> bool:
     """
-    Given the paddle and a puck, returns whether the two collide.
+    Given a paddle and a puck, returns whether the two collide.
     """
 
     if paddle.x < screen_x_dim // 2:
@@ -65,18 +68,22 @@ def paddle_and_puck_collide(paddle: Paddle, puck: Puck) -> bool:
         if puck.x <= paddle.x + paddle.width:
             if puck.y < paddle.y + paddle.height // 2:
                 if puck.y + puck.side_length >= paddle.y:
+                    pyxel.play(0, 0)
                     return True
             else:
                 if puck.y <= paddle.y + paddle.height:
+                    pyxel.play(0, 0)
                     return True
 
     else:
         if puck.x + puck.side_length >= paddle.x:
             if puck.y < paddle.y + paddle.height // 2:
                 if puck.y + puck.side_length >= paddle.y:
+                    pyxel.play(0, 0)
                     return True
             else:
                 if puck.y <= paddle.y + paddle.height:
+                    pyxel.play(0, 0)
                     return True
     return False
 
@@ -91,9 +98,21 @@ class App:
         self.best_of_msg: str = "BEST OF 9"
         self.p1won: bool = False
         self.p2won: bool = False
+        self.bg_music_playing: bool = False
 
-        pyxel.init(self.screen_x_dim, self.screen_y_dim, caption="PONG")
+        pyxel.init(self.screen_x_dim, self.screen_y_dim, caption="PONG", fullscreen=True)
+        pyxel.load("assets.pyxres")
         pyxel.run(self.update, self.draw)
+
+    def start_bg_music(self):
+        if not self.bg_music_playing:
+            pyxel.play(1, 3, loop=True)
+            self.bg_music_playing = True
+
+    def stop_bg_music(self):
+        if self.bg_music_playing:
+            pyxel.stop(1)
+            self.bg_music_playing = False
 
     def update(self):
         if pyxel.btnp(pyxel.KEY_SPACE):
@@ -103,6 +122,7 @@ class App:
                 self.game_paused = not self.game_paused
 
         if not self.game_paused:
+            self.start_bg_music()
             # Listening to input
             if pyxel.btn(pyxel.KEY_Q):
                 paddle1.move_up()
@@ -131,29 +151,38 @@ class App:
             # update points and set ball
             if the_puck.x <= 0:
                 self.score2 += 1
+                self.stop_bg_music()
+                pyxel.play(0, 1)
                 the_puck.x = paddle2.x - paddle2.width
                 the_puck.y = paddle2.y + paddle2.height // 2
                 if self.score2 >= 5:
-                    self.best_of_msg = "BRAVO P2"
+                    self.best_of_msg = "BRAVO P2!"
                     self.p2won = True
+                    self.stop_bg_music()
+                    pyxel.play(0, 2)
                 self.game_paused = True
 
             if the_puck.x + the_puck.side_length >= screen_x_dim:
                 self.score1 += 1
+                self.stop_bg_music()
+                pyxel.play(0, 1)
                 the_puck.x = paddle1.x + paddle1.width
                 the_puck.y = paddle1.y + paddle1.height // 2
                 if self.score1 >= 5:
-                    self.best_of_msg = "BRAVO P1"
+                    self.best_of_msg = "BRAVO P1!"
                     self.p1won = True
+                    self.stop_bg_music()
+                    pyxel.play(0, 2)
                 self.game_paused = True
 
 
     def draw(self):
         if not self.game_paused:
             pyxel.cls(0)
+            pyxel.rect(the_puck.x, the_puck.y, the_puck.side_length, the_puck.side_length,
+                       the_puck.color)
             pyxel.rect(paddle1.x, paddle1.y, paddle1.width, paddle1.height, paddle1.color)
             pyxel.rect(paddle2.x, paddle2.y, paddle2.width, paddle2.height, paddle2.color)
-            pyxel.rect(the_puck.x, the_puck.y, the_puck.side_length, the_puck.side_length, the_puck.color)
             pyxel.text(screen_x_dim // 3, paddle_padding_from_screen, str(self.score1), 7)
             pyxel.text(screen_x_dim - screen_x_dim // 3, paddle_padding_from_screen, str(self.score2), 7)
         else:
